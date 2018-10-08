@@ -41,6 +41,8 @@ import io.netty.util.AsciiString;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.transport.http.netty.vick.HeaderAdjustmentInboundHandler;
+import org.wso2.transport.http.netty.vick.HeaderAdjustmentOutboundHandler;
 import org.wso2.transport.http.netty.common.Constants;
 import org.wso2.transport.http.netty.common.certificatevalidation.CertificateVerificationException;
 import org.wso2.transport.http.netty.common.ssl.SSLConfig;
@@ -187,6 +189,12 @@ public class HttpServerChannelInitializer extends ChannelInitializer<SocketChann
                 serverPipeline.addLast(HTTP_ACCESS_LOG_HANDLER, new HttpAccessLoggingHandler(ACCESS_LOG));
             }
         }
+
+        serverPipeline.addLast(
+                new HeaderAdjustmentInboundHandler(),
+                new HeaderAdjustmentOutboundHandler()
+        );
+
         serverPipeline.addLast("uriLengthValidator", new UriAndHeaderLengthValidator(this.serverName));
         if (reqSizeValidationConfig.getMaxEntityBodySize() > -1) {
             serverPipeline.addLast("maxEntityBodyValidator", new MaxEntityBodyValidator(this.serverName,
@@ -238,6 +246,12 @@ public class HttpServerChannelInitializer extends ChannelInitializer<SocketChann
         if (httpAccessLogEnabled) {
             pipeline.addLast(HTTP_ACCESS_LOG_HANDLER, new HttpAccessLoggingHandler(ACCESS_LOG));
         }
+
+        pipeline.addLast(
+                new HeaderAdjustmentInboundHandler(),
+                new HeaderAdjustmentOutboundHandler()
+        );
+
         pipeline.addLast(Constants.HTTP2_UPGRADE_HANDLER,
                          new HttpServerUpgradeHandler(sourceCodec, upgradeCodecFactory, Integer.MAX_VALUE));
         /* Max size of the upgrade request is limited to 2GB. Need to see whether there is a better approach to handle
