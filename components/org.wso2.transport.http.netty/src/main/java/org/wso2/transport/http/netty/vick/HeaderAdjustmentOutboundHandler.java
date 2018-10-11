@@ -23,10 +23,10 @@ import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
 
 import java.nio.charset.Charset;
 import java.util.Base64;
+import java.util.Locale;
 
 /**
  * Header adjustment handler to adjust the tracing headers for Ballerina Observability.
@@ -39,9 +39,6 @@ public class HeaderAdjustmentOutboundHandler extends ChannelOutboundHandlerAdapt
         if (msg instanceof HttpRequest) {
             HttpRequest httpRequest = (HttpRequest) msg;
             headers = httpRequest.headers();
-        } else if (msg instanceof HttpResponse) {
-            HttpResponse httpResponse = (HttpResponse) msg;
-            headers = httpResponse.headers();
         }
 
         if (headers != null) {
@@ -53,9 +50,9 @@ public class HeaderAdjustmentOutboundHandler extends ChannelOutboundHandlerAdapt
                         Charset.defaultCharset()
                 );
 
-                for (String keyValueHeader : ballerinaTracingContext.split(",")) {
+                for (String keyValueHeader : ballerinaTracingContext.split(", ")) {
                     String[] splitKeyValueHeader = keyValueHeader.split("=");
-                    headers.add(splitKeyValueHeader[0], splitKeyValueHeader[1]);
+                    headers.add(splitKeyValueHeader[0].toLowerCase(Locale.ENGLISH), splitKeyValueHeader[1]);
                 }
             }
         }

@@ -22,7 +22,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
 
 import java.nio.charset.Charset;
 import java.util.Base64;
@@ -40,9 +39,6 @@ public class HeaderAdjustmentInboundHandler extends ChannelInboundHandlerAdapter
         if (msg instanceof HttpRequest) {
             HttpRequest httpRequest = (HttpRequest) msg;
             headers = httpRequest.headers();
-        } else if (msg instanceof HttpResponse) {
-            HttpResponse httpResponse = (HttpResponse) msg;
-            headers = httpResponse.headers();
         }
 
         if (headers != null) {
@@ -61,15 +57,26 @@ public class HeaderAdjustmentInboundHandler extends ChannelInboundHandlerAdapter
                 }
             }
 
-            String tracingHeaderMapString = tracingHeadersMap.toString();
-            String ballerinaTracingHeader = tracingHeaderMapString.substring(1, tracingHeaderMapString.length() - 1);
-            headers.add(
-                    Constants.BALLERINA_TRACING_HEADER,
-                    new String(
-                            Base64.getEncoder().encode(ballerinaTracingHeader.getBytes(Charset.defaultCharset())),
-                            Charset.defaultCharset()
-                    )
-            );
+            StringBuilder ballerinaTracingHeaderBuilder = new StringBuilder();
+            for (Map.Entry<String, String> headerEntry : tracingHeadersMap.entrySet()) {
+                if (!"".equals(ballerinaTracingHeaderBuilder.toString())) {
+                    ballerinaTracingHeaderBuilder.append(",");
+                }
+                ballerinaTracingHeaderBuilder.append(headerEntry.getKey())
+                        .append("=")
+                        .append(headerEntry.getValue());
+            }
+
+            String ballerinaTracingHeader = ballerinaTracingHeaderBuilder.toString();
+            if (!"".equals(ballerinaTracingHeader)) {
+                headers.add(
+                        Constants.BALLERINA_TRACING_HEADER,
+                        new String(
+                                Base64.getEncoder().encode(ballerinaTracingHeader.getBytes(Charset.defaultCharset())),
+                                Charset.defaultCharset()
+                        )
+                );
+            }
         }
         ctx.fireChannelRead(msg);
     }

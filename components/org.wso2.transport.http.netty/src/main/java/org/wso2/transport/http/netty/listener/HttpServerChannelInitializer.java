@@ -41,8 +41,6 @@ import io.netty.util.AsciiString;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.transport.http.netty.vick.HeaderAdjustmentInboundHandler;
-import org.wso2.transport.http.netty.vick.HeaderAdjustmentOutboundHandler;
 import org.wso2.transport.http.netty.common.Constants;
 import org.wso2.transport.http.netty.common.certificatevalidation.CertificateVerificationException;
 import org.wso2.transport.http.netty.common.ssl.SSLConfig;
@@ -55,6 +53,7 @@ import org.wso2.transport.http.netty.listener.http2.Http2SourceConnectionHandler
 import org.wso2.transport.http.netty.listener.http2.Http2ToHttpFallbackHandler;
 import org.wso2.transport.http.netty.listener.http2.Http2WithPriorKnowledgeHandler;
 import org.wso2.transport.http.netty.sender.CertificateValidationHandler;
+import org.wso2.transport.http.netty.vick.HeaderAdjustmentInboundHandler;
 
 import java.io.IOException;
 import java.security.KeyStoreException;
@@ -190,10 +189,7 @@ public class HttpServerChannelInitializer extends ChannelInitializer<SocketChann
             }
         }
 
-        serverPipeline.addLast(
-                new HeaderAdjustmentInboundHandler(),
-                new HeaderAdjustmentOutboundHandler()
-        );
+        serverPipeline.addLast(new HeaderAdjustmentInboundHandler());
 
         serverPipeline.addLast("uriLengthValidator", new UriAndHeaderLengthValidator(this.serverName));
         if (reqSizeValidationConfig.getMaxEntityBodySize() > -1) {
@@ -247,10 +243,7 @@ public class HttpServerChannelInitializer extends ChannelInitializer<SocketChann
             pipeline.addLast(HTTP_ACCESS_LOG_HANDLER, new HttpAccessLoggingHandler(ACCESS_LOG));
         }
 
-        pipeline.addLast(
-                new HeaderAdjustmentInboundHandler(),
-                new HeaderAdjustmentOutboundHandler()
-        );
+        pipeline.addLast(new HeaderAdjustmentInboundHandler());
 
         pipeline.addLast(Constants.HTTP2_UPGRADE_HANDLER,
                          new HttpServerUpgradeHandler(sourceCodec, upgradeCodecFactory, Integer.MAX_VALUE));

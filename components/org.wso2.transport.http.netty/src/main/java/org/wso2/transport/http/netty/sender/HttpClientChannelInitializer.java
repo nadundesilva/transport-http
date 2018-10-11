@@ -53,7 +53,6 @@ import org.wso2.transport.http.netty.sender.http2.ClientFrameListener;
 import org.wso2.transport.http.netty.sender.http2.Http2ClientChannel;
 import org.wso2.transport.http.netty.sender.http2.Http2ConnectionManager;
 import org.wso2.transport.http.netty.sender.http2.Http2TargetHandler;
-import org.wso2.transport.http.netty.vick.HeaderAdjustmentInboundHandler;
 import org.wso2.transport.http.netty.vick.HeaderAdjustmentOutboundHandler;
 
 import javax.net.ssl.SSLException;
@@ -210,10 +209,7 @@ public class HttpClientChannelInitializer extends ChannelInitializer<SocketChann
                 Integer.MAX_VALUE);
         pipeline.addLast(Constants.HTTP2_UPGRADE_HANDLER, upgradeHandler);
 
-        pipeline.addLast(
-                new HeaderAdjustmentInboundHandler(),
-                new HeaderAdjustmentOutboundHandler()
-        );
+        pipeline.addLast(new HeaderAdjustmentOutboundHandler());
 
         pipeline.addLast(Constants.TARGET_HANDLER, targetHandler);
     }
@@ -239,10 +235,7 @@ public class HttpClientChannelInitializer extends ChannelInitializer<SocketChann
         pipeline.addLast(Constants.HTTP_CLIENT_CODEC, new HttpClientCodec());
         addCommonHandlers(pipeline);
 
-        pipeline.addLast(
-                new HeaderAdjustmentInboundHandler(),
-                new HeaderAdjustmentOutboundHandler()
-        );
+        pipeline.addLast(new HeaderAdjustmentOutboundHandler());
 
         pipeline.addLast(Constants.TARGET_HANDLER, targetHandler);
     }
